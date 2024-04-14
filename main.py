@@ -5,6 +5,13 @@ def encode(password):
         encoded_password += encoded_digit
     return encoded_password
 
+def decode(password):
+    decoded_password = ""
+    for digit in password:
+        decoded_digit = str((int(digit) - 3) % 10)
+        decoded_password += decoded_digit
+    return decoded_password
+
 
 
 def menu():
