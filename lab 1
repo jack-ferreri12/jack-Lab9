@@ -1,0 +1,94 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <iomanip>
+using namespace std;
+
+
+
+int main() {
+    string title;
+    string col1Header, col2Header;
+
+    cout << "Enter a title for the data:" << endl;
+    getline(cin, title);
+    cout << "You entered: " << title << endl;
+
+    cout << "Enter the column 1 header:" << endl;
+    getline(cin, col1Header);
+    cout << "You entered: " << col1Header << endl;
+
+    cout << "Enter the column 2 header:" << endl;
+    getline(cin, col2Header);
+    cout << "You entered: " << col2Header << endl;
+
+    vector<string> col1;
+    vector<int> col2;
+
+    while (true) {
+        cout << "Enter a data point (-1 to stop input):" << endl;
+        string userInput;
+        getline(cin, userInput);
+
+
+        if (userInput == "-1") {
+            break;
+        }
+        string comma = ",";
+        size_t commaPos = userInput.find(comma);
+
+        if (commaPos == string::npos) {
+            cout << "Error: No comma in string." << endl;
+            continue;
+        }
+        string beforeComma = userInput.substr(0, commaPos);
+        string afterComma = userInput.substr(commaPos + 1);
+
+        if (userInput.find(comma, commaPos + 1) != string::npos) {
+            cout << "Error: Too many commas in input." << endl;
+            continue;
+        }
+        try {
+            int number = stoi(afterComma);
+            cout << "Data string: " << beforeComma << endl;
+            cout << "Data integer: " << number << endl;
+            col1.push_back(beforeComma);
+            col2.push_back(number);
+        }
+        catch(const invalid_argument& e) {
+            cout << "Error: Comma not followed by an integer." << endl;
+
+        }
+    }
+    cout << endl;
+    cout << setw(33) << right << title << endl;
+    cout << setw(20) << left << col1Header << "|" << setw(23) << right << col2Header << endl;
+    cout << "--------------------------------------------" << endl;
+    for (size_t i = 0; i < col1.size(); i++) {
+        cout << setw(20) << left << col1[i] << "|" << setw(23) << right << col2[i] << endl;
+
+    }
+    cout << endl;
+    for (size_t i = 0; i < col1.size(); i++) {
+        cout << setw(20) << right << col1[i] << " ";
+        for (int j = 0; j < col2[i]; j++) {
+            cout << "*";
+        }
+        cout << endl;
+    }
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
