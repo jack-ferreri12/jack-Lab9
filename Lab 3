@@ -1,0 +1,214 @@
+#ifndef CONTACTBOOK_H
+#define CONTACTBOOK_H
+
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+class Contact {
+private:
+    string name;
+    string number;
+
+public:
+    Contact();
+    Contact(string na, string num);
+    Contact(const Contact& other);
+    ~Contact();
+
+    string getName();
+    string getNumber();
+    void Display();
+
+    bool operator==(const Contact& other);
+    bool operator!=(const Contact& other);
+};
+
+class ContactBook {
+private:
+    static const int MAX_SIZE = 100;
+    Contact* contacts[MAX_SIZE];
+    unsigned int curr_size;
+
+public:
+    ContactBook();
+    ContactBook(const ContactBook& other);
+    ContactBook& operator=(const ContactBook& other);
+    ~ContactBook();
+
+    Contact* Find(string info);
+    void Add(Contact& contact);
+    void AddContacts(const vector<Contact*>& contactVector);
+    void Remove(Contact& contact);
+    void Display();
+    void Alphabetize();
+
+    ContactBook& operator+=(Contact& contact);
+    ContactBook& operator+=(ContactBook& other);
+    ContactBook& operator-=(Contact& contact);
+    ContactBook& operator-=(ContactBook& other);
+    ContactBook operator+(ContactBook& other);
+    ContactBook operator-(ContactBook& other);
+    bool operator==(ContactBook& other);
+    bool operator!=(ContactBook& other);
+};
+
+#endif // CONTACTBOOK_H
+
+
+
+
+
+
+
+#include "ContactBook.h"
+
+Contact::Contact() : name(""), number("") {}
+
+Contact::Contact(string name, string number) : name(name), number(number) {}
+
+Contact::Contact(const Contact& other) : name(other.name), number(other.number) {}
+
+Contact::~Contact() {}
+
+string Contact::getName() {
+    return name;
+}
+
+string Contact::getNumber() {
+    return number;
+}
+
+void Contact::Display() {
+    cout << name << ", " << number << endl;
+}
+
+bool Contact::operator==(const Contact& other) {
+    return name == other.name && number == other.number;
+}
+
+bool Contact::operator!=(const Contact& other) {
+    return !(*this == other);
+}
+
+ContactBook::ContactBook() : curr_size(0) {
+    for (unsigned int i = 0; i < MAX_SIZE; ++i) {
+        contacts[i] = nullptr;
+    }
+}
+
+ContactBook::ContactBook(const ContactBook& other) : curr_size(other.curr_size) {
+    for (unsigned int i = 0; i < curr_size; ++i) {
+        contacts[i] = other.contacts[i]; // Reference copy
+    }
+}
+
+ContactBook& ContactBook::operator=(const ContactBook& other) {
+    if (this != &other) {
+        curr_size = other.curr_size;
+        for (unsigned int i = 0; i < curr_size; ++i) {
+            contacts[i] = other.contacts[i]; // Reference copy
+        }
+    }
+    return *this;
+}
+
+ContactBook::~ContactBook() {}
+
+Contact* ContactBook::Find(string info) {
+    for (unsigned int i = 0; i < curr_size; ++i) {
+        if (contacts[i]->getName() == info || contacts[i]->getNumber() == info) {
+            return contacts[i];
+        }
+    }
+    return nullptr;
+}
+
+void ContactBook::Add(Contact& contact) {
+    if (curr_size < MAX_SIZE) {
+        contacts[curr_size++] = &contact; // Store reference to the passed contact
+    }
+}
+
+void ContactBook::AddContacts(const vector<Contact*>& contactVector) {
+    for (Contact* contact : contactVector) {
+        Add(*contact);
+    }
+}
+
+void ContactBook::Remove(Contact& contact) {
+    for (unsigned int i = 0; i < curr_size; ++i) {
+        if (*contacts[i] == contact) {
+            for (unsigned int j = i; j < curr_size - 1; ++j) {
+                contacts[j] = contacts[j + 1];
+            }
+            contacts[--curr_size] = nullptr;
+            break;
+        }
+    }
+}
+
+void ContactBook::Display() {
+    for (unsigned int i = 0; i < curr_size; ++i) {
+        contacts[i]->Display();
+    }
+}
+
+void ContactBook::Alphabetize() {
+    sort(contacts, contacts + curr_size, [](Contact* a, Contact* b) {
+        return a->getName() < b->getName();
+    });
+}
+
+ContactBook& ContactBook::operator+=(Contact& contact) {
+    Add(contact);
+    return *this;
+}
+
+ContactBook& ContactBook::operator+=(ContactBook& other) {
+    for (unsigned int i = 0; i < other.curr_size; ++i) {
+        Add(*other.contacts[i]);
+    }
+    return *this;
+}
+
+ContactBook& ContactBook::operator-=(Contact& contact) {
+    Remove(contact);
+    return *this;
+}
+
+ContactBook& ContactBook::operator-=(ContactBook& other) {
+    for (unsigned int i = 0; i < other.curr_size; ++i) {
+        Remove(*other.contacts[i]);
+    }
+    return *this;
+}
+
+ContactBook ContactBook::operator+(ContactBook& other) {
+    ContactBook result = *this;
+    result += other;
+    return result;
+}
+
+ContactBook ContactBook::operator-(ContactBook& other) {
+    ContactBook result = *this;
+    result -= other;
+    return result;
+}
+
+bool ContactBook::operator==(ContactBook& other) {
+    if (curr_size != other.curr_size) return false;
+    for (unsigned int i = 0; i < curr_size; ++i) {
+        if (!other.Find(contacts[i]->getName()) && !other.Find(contacts[i]->getNumber())) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ContactBook::operator!=(ContactBook& other) {
+    return !(*this == other);
+}
