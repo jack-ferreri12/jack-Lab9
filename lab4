@@ -1,0 +1,197 @@
+#include <stdexcept>
+
+template<typename T>
+class ABS {
+private:
+    T* data; // Pointer to the array
+    unsigned int currentSize;
+    unsigned int maxCapacity;
+    float scaleFactor;
+
+    void resize(unsigned int newCapacity) {
+        T* newData = new T[newCapacity]; // Allocate new array
+        for (unsigned int i = 0; i < currentSize; ++i) {
+            newData[i] = data[i]; // Copy old data
+        }
+        delete[] data; // Free old memory
+        data = newData; // Redirect to new data
+        maxCapacity = newCapacity; // Update capacity
+    }
+
+public:
+    ABS() : currentSize(0), maxCapacity(1), scaleFactor(2.0f) {
+        data = new T[maxCapacity]; // Allocate initial array
+    }
+
+    ABS(int capacity) : currentSize(0), maxCapacity(capacity), scaleFactor(2.0f) {
+        if (capacity <= 0) throw std::runtime_error("Capacity must be positive.");
+        data = new T[maxCapacity]; // Allocate array with specified capacity
+    }
+
+    ABS(const ABS &other) : currentSize(other.currentSize), maxCapacity(other.maxCapacity), scaleFactor(other.scaleFactor) {
+        data = new T[maxCapacity]; // Allocate new array
+        for (unsigned int i = 0; i < currentSize; i++) {
+            data[i] = other.data[i]; // Copy data
+        }
+    }
+
+    ABS& operator=(const ABS &other) {
+        if (this != &other) {
+            delete[] data; // Free old memory
+            currentSize = other.currentSize;
+            maxCapacity = other.maxCapacity;
+            scaleFactor = other.scaleFactor;
+
+            data = new T[maxCapacity]; // Allocate new array
+            for (unsigned int i = 0; i < currentSize; i++) {
+                data[i] = other.data[i]; // Copy data
+            }
+        }
+        return *this; // Return current object
+    }
+
+    ~ABS() {
+        delete[] data; // Free allocated memory
+    }
+
+    void push(T value) {
+        if (currentSize >= maxCapacity) {
+            resize(maxCapacity * scaleFactor); // Resize if necessary
+        }
+        data[currentSize++] = value; // Add new value
+    }
+
+    T pop() {
+        if (currentSize == 0) {
+            throw std::runtime_error("Stack is empty.");
+        }
+        T value = data[--currentSize]; // Remove and return the top value
+        // Resize if needed
+        if (currentSize < maxCapacity / scaleFactor) {
+            resize(maxCapacity / scaleFactor);
+        }
+        return value; // Return the removed value
+    }
+
+    T peek() {
+        if (currentSize == 0) {
+            throw std::runtime_error("Stack is empty.");
+        }
+        return data[currentSize - 1]; // Return top value without removing it
+    }
+
+    unsigned int getSize() {
+        return currentSize; // Return current size
+    }
+
+    unsigned int getMaxCapacity() {
+        return maxCapacity; // Return max capacity
+    }
+
+    T* getData() {
+        return data; // Return pointer to the array
+    }
+};
+
+template<typename T>
+class ABQ {
+private:
+    T* data; // Pointer to the array
+    unsigned int front;
+    unsigned int rear;
+    unsigned int currentSize;
+    unsigned int maxCapacity;
+    float scaleFactor;
+
+    void resize(unsigned int newCapacity) {
+        T* newData = new T[newCapacity]; // Allocate new array
+        for (unsigned int i = 0; i < currentSize; ++i) {
+            newData[i] = data[(front + i) % maxCapacity]; // Copy data with wrap-around
+        }
+        delete[] data; // Free old memory
+        data = newData; // Redirect to new data
+        maxCapacity = newCapacity; // Update capacity
+        front = 0; // Reset front
+        rear = currentSize; // Reset rear
+    }
+
+public:
+    ABQ() : front(0), rear(0), currentSize(0), maxCapacity(1), scaleFactor(2.0f) {
+        data = new T[maxCapacity]; // Allocate initial array
+    }
+
+    ABQ(int capacity) : front(0), rear(0), currentSize(0), maxCapacity(capacity), scaleFactor(2.0f) {
+        if (capacity <= 0) throw std::runtime_error("Capacity must be positive.");
+        data = new T[maxCapacity]; // Allocate array with specified capacity
+    }
+
+    ABQ(const ABQ &other) : front(other.front), rear(other.rear), currentSize(other.currentSize), maxCapacity(other.maxCapacity), scaleFactor(other.scaleFactor) {
+        data = new T[maxCapacity]; // Allocate new array
+        for (unsigned int i = 0; i < currentSize; ++i) {
+            data[i] = other.data[(other.front + i) % other.maxCapacity]; // Copy data with wrap-around
+        }
+    }
+
+    ABQ& operator=(const ABQ &other) {
+        if (this != &other) {
+            delete[] data; // Free old memory
+            front = other.front;
+            rear = other.rear;
+            currentSize = other.currentSize;
+            maxCapacity = other.maxCapacity;
+            scaleFactor = other.scaleFactor;
+
+            data = new T[maxCapacity]; // Allocate new array
+            for (unsigned int i = 0; i < currentSize; ++i) {
+                data[i] = other.data[(other.front + i) % other.maxCapacity]; // Copy data with wrap-around
+            }
+        }
+        return *this; // Return current object
+    }
+
+    ~ABQ() {
+        delete[] data; // Free allocated memory
+    }
+
+    void enqueue(T item) {
+        if (currentSize >= maxCapacity) {
+            resize(maxCapacity * scaleFactor); // Resize if necessary
+        }
+        data[rear] = item; // Add new item
+        rear = (rear + 1) % maxCapacity; // Update rear with wrap-around
+        currentSize++; // Increment size
+    }
+
+    T dequeue() {
+        if (currentSize == 0) {
+            throw std::runtime_error("Queue is empty.");
+        }
+        T item = data[front]; // Get item from front
+        front = (front + 1) % maxCapacity; // Update front with wrap-around
+        currentSize--; // Decrement size
+        // Resize if needed
+        if (currentSize < maxCapacity / scaleFactor) {
+            resize(maxCapacity / scaleFactor);
+        }
+        return item; // Return the dequeued item
+    }
+
+    T peek() {
+        if (currentSize == 0) {
+            throw std::runtime_error("Queue is empty.");
+        }
+        return data[front]; // Return front item without removing it
+    }
+
+    unsigned int getSize() {
+        return currentSize; // Return current size
+    }
+
+    unsigned int getMaxCapacity() {
+        return maxCapacity; // Return max capacity
+    }
+
+    T* getData() {
+        return data; // Return pointer to the array
+    }
+};
